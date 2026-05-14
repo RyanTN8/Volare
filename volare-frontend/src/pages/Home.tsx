@@ -43,10 +43,14 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Form */}
+            {/* Form — both stay mounted so input state survives tab switches */}
             <div className="p-6">
-              {tab === 'flights' && <FlightSearchForm onSearch={p => navigate(`/flights?${p}`)} />}
-              {tab === 'itinerary' && <ItinerarySearchForm onSearch={p => navigate(`/itinerary?${p}`)} />}
+              <div className={tab === 'itinerary' ? '' : 'hidden'}>
+                <ItinerarySearchForm onSearch={p => navigate(`/itinerary?${p}`)} />
+              </div>
+              <div className={tab === 'flights' ? '' : 'hidden'}>
+                <FlightSearchForm onSearch={p => navigate(`/flights?${p}`)} />
+              </div>
             </div>
           </div>
         </div>
