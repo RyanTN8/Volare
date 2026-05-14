@@ -23,7 +23,9 @@ public class CacheConfig {
                 DUFFEL_FLIGHT_CACHE
         );
         manager.setCaffeine(defaultSpec());
-        manager.setAsyncCacheMode(false);
+        // Required: the cached client methods return Mono<...>, which Spring caches
+        // via Caffeine's AsyncCache. Without async mode every @Cacheable call 409s.
+        manager.setAsyncCacheMode(true);
         return manager;
     }
 
