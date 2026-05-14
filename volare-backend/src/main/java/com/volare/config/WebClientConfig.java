@@ -3,8 +3,10 @@ package com.volare.config;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,7 +24,11 @@ public class WebClientConfig {
 
     private static final Logger log = LoggerFactory.getLogger(WebClientConfig.class);
 
+    // Prototype-scoped: WebClient.Builder is mutable, and each client (Foursquare,
+    // Duffel, Gemini) calls baseUrl()/defaultHeader() on it. A shared singleton would
+    // leak auth headers between clients (e.g. Duffel's Bearer token reaching Gemini).
     @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public WebClient.Builder webClientBuilder() {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)

@@ -44,7 +44,9 @@ duffel:
 gemini:
   api-key: ${GEMINI_API_KEY:}
   base-url: https://generativelanguage.googleapis.com/v1beta
-  model: gemini-2.0-flash
+  # gemini-2.0-flash has zero free-tier quota on the current key's project;
+  # gemini-2.5-flash works on the free tier.
+  model: gemini-2.5-flash
   timeout-seconds: 30
 
 management:
