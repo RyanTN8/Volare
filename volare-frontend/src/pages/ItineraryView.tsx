@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { generateItinerary } from '../api/itinerary'
@@ -79,6 +79,13 @@ export default function ItineraryView() {
             <p className="text-slate-500 mt-1">
               {plan.durationDays}-day trip · {plan.budgetEstimate}
             </p>
+            <Link
+              to={`/restaurants?${new URLSearchParams({ location: plan.destination })}`}
+              className="btn-secondary inline-flex items-center gap-2 mt-3 text-sm"
+            >
+              <UtensilsCrossed className="w-4 h-4" />
+              Find restaurants in {plan.destination}
+            </Link>
             {plan.generalTips.length > 0 && (
               <div className="mt-4 bg-brand-50 rounded-xl p-4">
                 <p className="text-sm font-semibold text-brand-700 mb-2">Travel Tips</p>
