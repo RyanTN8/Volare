@@ -40,7 +40,7 @@ export default function FlightResults() {
       {isLoading && (
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="card p-5 animate-pulse h-28" />
+            <FlightSkeletonCard key={i} />
           ))}
         </div>
       )}
@@ -62,6 +62,39 @@ export default function FlightResults() {
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+/** Loading placeholder shaped like a FlightCard, with a highlight band that sweeps top → bottom. */
+function FlightSkeletonCard() {
+  return (
+    <div className="card relative overflow-hidden p-5">
+      <div className="flex items-center justify-between gap-4">
+        {/* Route */}
+        <div className="flex items-center gap-3 flex-1">
+          <div className="space-y-2 min-w-[60px]">
+            <div className="h-5 w-12 bg-brand-200 rounded" />
+            <div className="h-3 w-10 bg-brand-100 rounded" />
+          </div>
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-16 bg-brand-100 rounded mx-auto" />
+            <div className="h-px w-full bg-brand-200" />
+            <div className="h-3 w-12 bg-brand-100 rounded mx-auto" />
+          </div>
+          <div className="space-y-2 min-w-[60px]">
+            <div className="h-5 w-12 bg-brand-200 rounded" />
+            <div className="h-3 w-10 bg-brand-100 rounded" />
+          </div>
+        </div>
+        {/* Price */}
+        <div className="space-y-2">
+          <div className="h-7 w-24 bg-brand-200 rounded" />
+          <div className="h-3 w-16 bg-brand-100 rounded ml-auto" />
+        </div>
+      </div>
+      {/* Top-to-bottom shimmer sweep */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-white/70 to-transparent animate-shimmer-down" />
     </div>
   )
 }
