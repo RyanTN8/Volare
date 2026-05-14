@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plane, UtensilsCrossed, Map, Search } from 'lucide-react'
+import { Plane, Map, Search } from 'lucide-react'
 import clsx from 'clsx'
 
-type Tab = 'flights' | 'restaurants' | 'itinerary'
+type Tab = 'itinerary' | 'flights'
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>('itinerary')
@@ -27,7 +27,6 @@ export default function Home() {
               {([
                 ['itinerary', 'AI Trip Planner', <Map className="w-4 h-4" />],
                 ['flights', 'Flights', <Plane className="w-4 h-4" />],
-                ['restaurants', 'Restaurants', <UtensilsCrossed className="w-4 h-4" />],
               ] as [Tab, string, React.ReactNode][]).map(([id, label, icon]) => (
                 <button
                   key={id}
@@ -47,7 +46,6 @@ export default function Home() {
             {/* Form */}
             <div className="p-6">
               {tab === 'flights' && <FlightSearchForm onSearch={p => navigate(`/flights?${p}`)} />}
-              {tab === 'restaurants' && <RestaurantSearchForm onSearch={p => navigate(`/restaurants?${p}`)} />}
               {tab === 'itinerary' && <ItinerarySearchForm onSearch={p => navigate(`/itinerary?${p}`)} />}
             </div>
           </div>
@@ -91,30 +89,6 @@ function FlightSearchForm({ onSearch }: { onSearch: (params: string) => void }) 
       <input className="input" type="number" min={1} max={9} value={form.passengers} onChange={update('passengers')} placeholder="Passengers (e.g. 1)" />
       <button type="submit" className="btn-primary flex items-center justify-center gap-2 col-span-2 md:col-span-1">
         <Search className="w-4 h-4" /> Search
-      </button>
-    </form>
-  )
-}
-
-function RestaurantSearchForm({ onSearch }: { onSearch: (params: string) => void }) {
-  const [location, setLocation] = useState('')
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSearch(new URLSearchParams({ location }).toString())
-  }
-
-  return (
-    <form onSubmit={submit} className="grid grid-cols-2 gap-3">
-      <input
-        className="input col-span-2"
-        placeholder="Location (e.g. San Francisco, CA)"
-        value={location}
-        onChange={e => setLocation(e.target.value)}
-        required
-      />
-      <button type="submit" className="btn-primary flex items-center justify-center gap-2 col-span-2">
-        <Search className="w-4 h-4" /> Find Restaurants
       </button>
     </form>
   )
