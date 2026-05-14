@@ -31,7 +31,8 @@ server:
 
 foursquare:
   api-key: ${FOURSQUARE_API_KEY:}
-  base-url: https://api.foursquare.com/v3
+  base-url: https://places-api.foursquare.com
+  api-version: "2025-06-17"
   cache-ttl-seconds: 300
   timeout-seconds: 10
 

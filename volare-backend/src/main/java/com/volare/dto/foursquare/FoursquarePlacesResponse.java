@@ -5,19 +5,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
+/**
+ * Maps the Foursquare Places API (places-api.foursquare.com) response.
+ * Note: {@code latitude}/{@code longitude} are top-level on a place in this API
+ * (the legacy v3 {@code geocodes.main} nesting is gone).
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record FoursquarePlacesResponse(List<Place> results) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Place(
-            @JsonProperty("fsq_id") String fsqId,
+            @JsonProperty("fsq_place_id") String fsqId,
             String name,
             List<Category> categories,
-            @JsonProperty("closed_bucket") String closedBucket,
             Integer distance,
-            Geocodes geocodes,
-            Hours hours,
+            Double latitude,
+            Double longitude,
             Location location,
+            // Premium fields — null unless the account spends API credits to request them.
+            @JsonProperty("closed_bucket") String closedBucket,
+            Hours hours,
             List<Photo> photos,
             Double popularity,
             Integer price,
@@ -28,7 +35,7 @@ public record FoursquarePlacesResponse(List<Place> results) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Category(
-            int id,
+            @JsonProperty("fsq_category_id") String fsqCategoryId,
             String name,
             @JsonProperty("short_name") String shortName,
             Icon icon
@@ -36,12 +43,6 @@ public record FoursquarePlacesResponse(List<Place> results) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Icon(String prefix, String suffix) {}
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Geocodes(Main main) {}
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Main(double latitude, double longitude) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Hours(

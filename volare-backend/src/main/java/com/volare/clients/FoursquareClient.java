@@ -18,29 +18,33 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class FoursquareClient {
 
     private static final Logger log = LoggerFactory.getLogger(FoursquareClient.class);
 
-    // Foursquare category id for "Dining and Drinking"
-    private static final String RESTAURANT_CATEGORY = "13065";
+    // Foursquare Places API taxonomy id for the "Dining and Drinking" category.
+    private static final String RESTAURANT_CATEGORY = "4d4b7105d754a06374d81259";
+    // Free-tier fields only. rating, hours, price, photos, tel and website are premium
+    // fields that require API credits, so they are intentionally not requested.
     private static final String PLACE_FIELDS =
-            "fsq_id,name,categories,closed_bucket,distance,geocodes,hours,location,photos,popularity,price,rating,tel,website";
+            "fsq_place_id,name,categories,distance,latitude,longitude,location";
 
     private final WebClient webClient;
 
     public FoursquareClient(
             WebClient.Builder webClientBuilder,
             @Value("${foursquare.base-url}") String baseUrl,
-            @Value("${foursquare.api-key}") String apiKey
+            @Value("${foursquare.api-key}") String apiKey,
+            @Value("${foursquare.api-version}") String apiVersion
     ) {
-        // Foursquare Places API v3 expects the raw API key in the Authorization header (no "Bearer" prefix).
+        // The Foursquare Places API authenticates with a Bearer service key and requires
+        // an explicit X-Places-Api-Version header.
         this.webClient = webClientBuilder
                 .baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, apiKey)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                .defaultHeader("X-Places-Api-Version", apiVersion)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
@@ -50,20 +54,19 @@ public class FoursquareClient {
     @Cacheable(value = CacheConfig.FOURSQUARE_SEARCH_CACHE,
                key = "#location + '-' + #term + '-' + #priceTier + '-' + #radius")
     public Mono<List<RestaurantDTO>> searchBusinesses(String location, String term, String priceTier, int radius) {
+        // The Places API rejects `radius` alongside `near` (radius only pairs with `ll`),
+        // so we let `near` resolve the search area. `radius` stays in the cache key only.
         UriComponentsBuilder uri = UriComponentsBuilder.fromPath("/places/search")
                 .queryParam("near", location)
-                .queryParam("radius", radius)
-                .queryParam("categories", RESTAURANT_CATEGORY)
+                .queryParam("fsq_category_ids", RESTAURANT_CATEGORY)
                 .queryParam("limit", 20)
                 .queryParam("fields", PLACE_FIELDS);
 
         if (term != null && !term.isBlank()) {
             uri.queryParam("query", term);
         }
-        parsePriceTier(priceTier).ifPresent(p -> {
-            uri.queryParam("min_price", p);
-            uri.queryParam("max_price", p);
-        });
+        // Price-tier filtering relies on premium price data and is unavailable on the free tier;
+        // priceTier is still part of the cache key so callers stay isolated.
 
         return webClient.get()
                 .uri(uri.build().toUriString())
@@ -112,8 +115,7 @@ public class FoursquareClient {
 
     private RestaurantDTO.Location mapLocation(FoursquarePlacesResponse.Place p) {
         FoursquarePlacesResponse.Location loc = p.location();
-        FoursquarePlacesResponse.Main geo = p.geocodes() != null ? p.geocodes().main() : null;
-        if (loc == null && geo == null) {
+        if (loc == null && p.latitude() == null && p.longitude() == null) {
             return null;
         }
         return new RestaurantDTO.Location(
@@ -121,8 +123,8 @@ public class FoursquareClient {
                 loc != null ? loc.locality() : null,
                 loc != null ? loc.region() : null,
                 loc != null ? loc.country() : null,
-                geo != null ? geo.latitude() : 0.0,
-                geo != null ? geo.longitude() : 0.0
+                p.latitude() != null ? p.latitude() : 0.0,
+                p.longitude() != null ? p.longitude() : 0.0
         );
     }
 
@@ -139,18 +141,6 @@ public class FoursquareClient {
             return null;
         }
         return "$".repeat(price);
-    }
-
-    private Optional<Integer> parsePriceTier(String priceTier) {
-        if (priceTier == null || priceTier.isBlank()) {
-            return Optional.empty();
-        }
-        try {
-            int tier = Integer.parseInt(priceTier.trim());
-            return (tier >= 1 && tier <= 4) ? Optional.of(tier) : Optional.empty();
-        } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
     }
 
     @SuppressWarnings("unused")
