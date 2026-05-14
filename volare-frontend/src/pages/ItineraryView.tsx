@@ -2,7 +2,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { generateItinerary } from '../api/itinerary'
-import type { ItineraryPlan, Activity } from '../types'
+import { useItineraryStore } from '../store/itineraryStore'
+import type { Activity } from '../types'
 import { Map, Loader2, UtensilsCrossed, Camera, Zap } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -11,10 +12,6 @@ const ACTIVITY_ICONS: Record<string, React.ReactNode> = {
   ATTRACTION: <Camera className="w-4 h-4" />,
   ACTIVITY: <Zap className="w-4 h-4" />,
 }
-
-const PLAN_STORAGE_KEY = 'volare:itineraryPlan'
-
-type StoredPlan = { plan: ItineraryPlan; signature: string }
 
 /** Identifies the search parameters a plan was generated for. */
 function paramsSignature(params: URLSearchParams): string {
@@ -31,32 +28,19 @@ export default function ItineraryView() {
   const signature = paramsSignature(params)
   const destination = params.get('destination')
 
-  // A previously generated plan, restored from localStorage so it survives
-  // navigating away and back.
-  const [stored, setStored] = useState<StoredPlan | null>(() => {
-    try {
-      const raw = localStorage.getItem(PLAN_STORAGE_KEY)
-      return raw ? (JSON.parse(raw) as StoredPlan) : null
-    } catch {
-      return null
-    }
-  })
+  // The generated plan lives in a module-level store, so it survives
+  // navigating away and back (but not a full page reload).
+  const { plan: storedPlan, signature: storedSignature, setPlan } = useItineraryStore()
   const [activeDay, setActiveDay] = useState(1)
 
   // Show the stored plan unless the URL carries new parameters from the
   // landing page that the stored plan wasn't generated for.
-  const plan = stored && (!destination || stored.signature === signature) ? stored.plan : null
+  const plan = storedPlan && (!destination || storedSignature === signature) ? storedPlan : null
 
   const mutation = useMutation({
     mutationFn: generateItinerary,
     onSuccess: data => {
-      const next: StoredPlan = { plan: data, signature }
-      setStored(next)
-      try {
-        localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(next))
-      } catch {
-        /* ignore quota / private-mode write errors */
-      }
+      setPlan(data, signature)
       setActiveDay(1)
     },
   })
