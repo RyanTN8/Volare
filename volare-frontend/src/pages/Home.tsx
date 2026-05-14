@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plane, Map, Search } from 'lucide-react'
 import clsx from 'clsx'
@@ -74,8 +74,29 @@ export default function Home() {
   )
 }
 
+/** useState backed by localStorage — input state survives tab switches, navigation, and reloads. */
+function usePersistentState<T>(key: string, initial: T) {
+  const [state, setState] = useState<T>(() => {
+    try {
+      const stored = localStorage.getItem(key)
+      return stored ? (JSON.parse(stored) as T) : initial
+    } catch {
+      return initial
+    }
+  })
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(state))
+    } catch {
+      /* ignore quota / private-mode write errors */
+    }
+  }, [key, state])
+  return [state, setState] as const
+}
+
 function FlightSearchForm({ onSearch }: { onSearch: (params: string) => void }) {
-  const [form, setForm] = useState({ origin: '', destination: '', departureDate: '', returnDate: '', passengers: '' })
+  const EMPTY = { origin: '', destination: '', departureDate: '', returnDate: '', passengers: '' }
+  const [form, setForm] = usePersistentState('volare:flightSearch', EMPTY)
   const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
 
   const submit = (e: React.FormEvent) => {
@@ -85,21 +106,29 @@ function FlightSearchForm({ onSearch }: { onSearch: (params: string) => void }) 
   }
 
   return (
-    <form onSubmit={submit} className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      <input className="input" placeholder="From (SFO)" value={form.origin} onChange={update('origin')} maxLength={3} required />
-      <input className="input" placeholder="To (JFK)" value={form.destination} onChange={update('destination')} maxLength={3} required />
-      <input className="input" type="date" value={form.departureDate} onChange={update('departureDate')} required />
-      <input className="input" type="date" placeholder="Return (optional)" value={form.returnDate} onChange={update('returnDate')} />
-      <input className="input" type="number" min={1} max={9} value={form.passengers} onChange={update('passengers')} placeholder="Passengers (e.g. 1)" />
-      <button type="submit" className="btn-primary flex items-center justify-center gap-2 col-span-2 md:col-span-1">
-        <Search className="w-4 h-4" /> Search
-      </button>
+    <form onSubmit={submit}>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <input className="input" placeholder="From (SFO)" value={form.origin} onChange={update('origin')} maxLength={3} required />
+        <input className="input" placeholder="To (JFK)" value={form.destination} onChange={update('destination')} maxLength={3} required />
+        <input className="input" type="date" value={form.departureDate} onChange={update('departureDate')} required />
+        <input className="input" type="date" placeholder="Return (optional)" value={form.returnDate} onChange={update('returnDate')} />
+        <input className="input" type="number" min={1} max={9} value={form.passengers} onChange={update('passengers')} placeholder="Passengers (e.g. 1)" />
+      </div>
+      <div className="flex gap-3 mt-3">
+        <button type="submit" className="btn-primary flex-1 flex items-center justify-center gap-2">
+          <Search className="w-4 h-4" /> Search
+        </button>
+        <button type="button" onClick={() => setForm(EMPTY)} className="btn-secondary">
+          Reset
+        </button>
+      </div>
     </form>
   )
 }
 
 function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void }) {
-  const [form, setForm] = useState({ destination: '', durationDays: '', interests: '', budget: 'moderate' })
+  const EMPTY = { destination: '', durationDays: '', interests: '', budget: 'moderate' }
+  const [form, setForm] = usePersistentState('volare:itinerarySearch', EMPTY)
   const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -110,18 +139,25 @@ function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void 
   }
 
   return (
-    <form onSubmit={submit} className="grid grid-cols-2 gap-3">
-      <input className="input" placeholder="Destination (e.g. Tokyo)" value={form.destination} onChange={update('destination')} required />
-      <input className="input" type="number" min={1} max={30} placeholder="Days (e.g. 2)" value={form.durationDays} onChange={update('durationDays')} required />
-      <input className="input col-span-2" placeholder="Interests (e.g. food, history, hiking)" value={form.interests} onChange={update('interests')} required />
-      <select className="input" value={form.budget} onChange={update('budget')}>
-        <option value="budget">Budget</option>
-        <option value="moderate">Moderate</option>
-        <option value="luxury">Luxury</option>
-      </select>
-      <button type="submit" className="btn-primary flex items-center justify-center gap-2">
-        <Map className="w-4 h-4" /> Generate Plan
-      </button>
+    <form onSubmit={submit}>
+      <div className="grid grid-cols-2 gap-3">
+        <input className="input" placeholder="Destination (e.g. Tokyo)" value={form.destination} onChange={update('destination')} required />
+        <input className="input" type="number" min={1} max={30} placeholder="Days (e.g. 2)" value={form.durationDays} onChange={update('durationDays')} required />
+        <input className="input col-span-2" placeholder="Interests (e.g. food, history, hiking)" value={form.interests} onChange={update('interests')} required />
+        <select className="input col-span-2" value={form.budget} onChange={update('budget')}>
+          <option value="budget">Budget</option>
+          <option value="moderate">Moderate</option>
+          <option value="luxury">Luxury</option>
+        </select>
+      </div>
+      <div className="flex gap-3 mt-3">
+        <button type="submit" className="btn-primary flex-1 flex items-center justify-center gap-2">
+          <Map className="w-4 h-4" /> Generate Plan
+        </button>
+        <button type="button" onClick={() => setForm(EMPTY)} className="btn-secondary">
+          Reset
+        </button>
+      </div>
     </form>
   )
 }
