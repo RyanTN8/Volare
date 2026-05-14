@@ -97,27 +97,22 @@ function FlightSearchForm({ onSearch }: { onSearch: (params: string) => void }) 
 }
 
 function RestaurantSearchForm({ onSearch }: { onSearch: (params: string) => void }) {
-  const [form, setForm] = useState({ location: '', term: '', priceTier: '', radius: '5000' })
-  const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }))
+  const [location, setLocation] = useState('')
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    const p = new URLSearchParams(Object.fromEntries(Object.entries(form).filter(([, v]) => v)))
-    onSearch(p.toString())
+    onSearch(new URLSearchParams({ location }).toString())
   }
 
   return (
     <form onSubmit={submit} className="grid grid-cols-2 gap-3">
-      <input className="input col-span-2" placeholder="Location (e.g. San Francisco, CA)" value={form.location} onChange={update('location')} required />
-      <input className="input" placeholder="Type (e.g. sushi, pizza)" value={form.term} onChange={update('term')} />
-      <select className="input" value={form.priceTier} onChange={update('priceTier')}>
-        <option value="">Any price</option>
-        <option value="1">$ Budget</option>
-        <option value="2">$$ Moderate</option>
-        <option value="3">$$$ Upscale</option>
-        <option value="4">$$$$ Fine Dining</option>
-      </select>
+      <input
+        className="input col-span-2"
+        placeholder="Location (e.g. San Francisco, CA)"
+        value={location}
+        onChange={e => setLocation(e.target.value)}
+        required
+      />
       <button type="submit" className="btn-primary flex items-center justify-center gap-2 col-span-2">
         <Search className="w-4 h-4" /> Find Restaurants
       </button>
