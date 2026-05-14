@@ -1,0 +1,24 @@
+# Secrets
+.env
+*.env.local
+
+# Backend
+volare-backend/target/
+volare-backend/.mvn/
+*.jar
+*.class
+
+# Frontend
+volare-frontend/node_modules/
+volare-frontend/dist/
+volare-frontend/.env
+volare-frontend/.env.local
+
+# IDE
+.idea/
+*.iml
+.vscode/settings.json
+.DS_Store
+
+# Docker
+*.log

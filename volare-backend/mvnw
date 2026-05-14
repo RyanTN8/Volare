@@ -1,0 +1,9 @@
+#!/bin/sh
+# Maven Wrapper script
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAVEN_WRAPPER_JAR="$SCRIPT_DIR/.mvn/wrapper/maven-wrapper.jar"
+MAVEN_WRAPPER_PROPERTIES="$SCRIPT_DIR/.mvn/wrapper/maven-wrapper.properties"
+
+exec java -jar "$MAVEN_WRAPPER_JAR" "$@"
