@@ -3,7 +3,9 @@ import axios from 'axios'
 const client = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30_000,
+  // 2 min: AI itinerary generation runs 10-15s, and a cold Render free-tier
+  // backend can add ~50s of wake-up time on the first request.
+  timeout: 120_000,
 })
 
 client.interceptors.response.use(
