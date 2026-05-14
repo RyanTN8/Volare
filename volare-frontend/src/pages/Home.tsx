@@ -6,7 +6,7 @@ import clsx from 'clsx'
 type Tab = 'flights' | 'restaurants' | 'itinerary'
 
 export default function Home() {
-  const [tab, setTab] = useState<Tab>('flights')
+  const [tab, setTab] = useState<Tab>('itinerary')
   const navigate = useNavigate()
 
   return (
@@ -15,9 +15,9 @@ export default function Home() {
       <div className="relative bg-gradient-to-br from-brand-700 to-brand-950 text-white py-24 px-4 text-center overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=')] bg-repeat" />
         <div className="relative max-w-3xl mx-auto">
-          <h1 className="text-5xl font-bold mb-4 tracking-tight">Travel, Reimagined</h1>
+          <h1 className="text-5xl font-bold mb-4 tracking-tight">Plan Your Trip with AI</h1>
           <p className="text-brand-200 text-lg mb-10">
-            AI-powered itineraries, flight search, and restaurant discovery — all in one place.
+            Get a personalized day-by-day itinerary in seconds — then find flights and restaurants to match.
           </p>
 
           {/* Search card */}
@@ -25,9 +25,9 @@ export default function Home() {
             {/* Tabs */}
             <div className="flex border-b border-slate-100">
               {([
+                ['itinerary', 'AI Trip Planner', <Map className="w-4 h-4" />],
                 ['flights', 'Flights', <Plane className="w-4 h-4" />],
                 ['restaurants', 'Restaurants', <UtensilsCrossed className="w-4 h-4" />],
-                ['itinerary', 'Plan a Trip', <Map className="w-4 h-4" />],
               ] as [Tab, string, React.ReactNode][]).map(([id, label, icon]) => (
                 <button
                   key={id}
@@ -73,7 +73,7 @@ export default function Home() {
 }
 
 function FlightSearchForm({ onSearch }: { onSearch: (params: string) => void }) {
-  const [form, setForm] = useState({ origin: '', destination: '', departureDate: '', returnDate: '', passengers: '1' })
+  const [form, setForm] = useState({ origin: '', destination: '', departureDate: '', returnDate: '', passengers: '' })
   const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
 
   const submit = (e: React.FormEvent) => {
@@ -88,7 +88,7 @@ function FlightSearchForm({ onSearch }: { onSearch: (params: string) => void }) 
       <input className="input" placeholder="To (JFK)" value={form.destination} onChange={update('destination')} maxLength={3} required />
       <input className="input" type="date" value={form.departureDate} onChange={update('departureDate')} required />
       <input className="input" type="date" placeholder="Return (optional)" value={form.returnDate} onChange={update('returnDate')} />
-      <input className="input" type="number" min={1} max={9} value={form.passengers} onChange={update('passengers')} placeholder="Passengers" />
+      <input className="input" type="number" min={1} max={9} value={form.passengers} onChange={update('passengers')} placeholder="Passengers (e.g. 1)" />
       <button type="submit" className="btn-primary flex items-center justify-center gap-2 col-span-2 md:col-span-1">
         <Search className="w-4 h-4" /> Search
       </button>
@@ -126,7 +126,7 @@ function RestaurantSearchForm({ onSearch }: { onSearch: (params: string) => void
 }
 
 function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void }) {
-  const [form, setForm] = useState({ destination: '', durationDays: '5', interests: '', budget: 'moderate' })
+  const [form, setForm] = useState({ destination: '', durationDays: '', interests: '', budget: 'moderate' })
   const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -139,7 +139,7 @@ function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void 
   return (
     <form onSubmit={submit} className="grid grid-cols-2 gap-3">
       <input className="input" placeholder="Destination (e.g. Tokyo)" value={form.destination} onChange={update('destination')} required />
-      <input className="input" type="number" min={1} max={30} placeholder="Days" value={form.durationDays} onChange={update('durationDays')} required />
+      <input className="input" type="number" min={1} max={30} placeholder="Days (e.g. 2)" value={form.durationDays} onChange={update('durationDays')} required />
       <input className="input col-span-2" placeholder="Interests (e.g. food, history, hiking)" value={form.interests} onChange={update('interests')} required />
       <select className="input" value={form.budget} onChange={update('budget')}>
         <option value="budget">Budget</option>

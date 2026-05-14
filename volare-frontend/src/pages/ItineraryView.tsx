@@ -28,7 +28,7 @@ export default function ItineraryView() {
   const handleGenerate = () => {
     mutation.mutate({
       destination: params.get('destination') ?? '',
-      durationDays: parseInt(params.get('durationDays') ?? '5'),
+      durationDays: parseInt(params.get('durationDays') ?? '2'),
       interests: params.get('interests') ?? 'food, culture, sightseeing',
       budget: params.get('budget') ?? 'moderate',
     })
@@ -149,9 +149,9 @@ function ActivityCard({ activity: a }: { activity: Activity }) {
     <div className="card p-4 flex items-start gap-4">
       <div className={clsx(
         'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0',
-        a.type === 'RESTAURANT' ? 'bg-orange-100 text-orange-600' :
+        a.type === 'RESTAURANT' ? 'bg-fuchsia-100 text-fuchsia-700' :
         a.type === 'ATTRACTION' ? 'bg-brand-100 text-brand-600' :
-        'bg-emerald-100 text-emerald-600'
+        'bg-violet-100 text-violet-700'
       )}>
         {ACTIVITY_ICONS[a.type] ?? <Map className="w-4 h-4" />}
       </div>
