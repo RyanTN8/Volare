@@ -1,5 +1,4 @@
 {
-  "$comment": "Proxies /api/* to the Render backend so the browser sees one origin (no CORS). After Render assigns your backend URL, replace the host below if it isn't exactly volare-backend.onrender.com.",
   "rewrites": [
     {
       "source": "/api/:path*",
