@@ -12,15 +12,51 @@ const ACTIVITY_ICONS: Record<string, React.ReactNode> = {
   ACTIVITY: <Zap className="w-4 h-4" />,
 }
 
+const PLAN_STORAGE_KEY = 'volare:itineraryPlan'
+
+type StoredPlan = { plan: ItineraryPlan; signature: string }
+
+/** Identifies the search parameters a plan was generated for. */
+function paramsSignature(params: URLSearchParams): string {
+  return [
+    params.get('destination') ?? '',
+    params.get('durationDays') ?? '',
+    params.get('interests') ?? '',
+    params.get('budget') ?? '',
+  ].join('|')
+}
+
 export default function ItineraryView() {
   const [params] = useSearchParams()
-  const [plan, setPlan] = useState<ItineraryPlan | null>(null)
+  const signature = paramsSignature(params)
+  const destination = params.get('destination')
+
+  // A previously generated plan, restored from localStorage so it survives
+  // navigating away and back.
+  const [stored, setStored] = useState<StoredPlan | null>(() => {
+    try {
+      const raw = localStorage.getItem(PLAN_STORAGE_KEY)
+      return raw ? (JSON.parse(raw) as StoredPlan) : null
+    } catch {
+      return null
+    }
+  })
   const [activeDay, setActiveDay] = useState(1)
+
+  // Show the stored plan unless the URL carries new parameters from the
+  // landing page that the stored plan wasn't generated for.
+  const plan = stored && (!destination || stored.signature === signature) ? stored.plan : null
 
   const mutation = useMutation({
     mutationFn: generateItinerary,
     onSuccess: data => {
-      setPlan(data)
+      const next: StoredPlan = { plan: data, signature }
+      setStored(next)
+      try {
+        localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(next))
+      } catch {
+        /* ignore quota / private-mode write errors */
+      }
       setActiveDay(1)
     },
   })
@@ -33,8 +69,6 @@ export default function ItineraryView() {
       budget: params.get('budget') ?? 'moderate',
     })
   }
-
-  const destination = params.get('destination')
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
