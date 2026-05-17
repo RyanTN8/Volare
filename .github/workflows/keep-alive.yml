@@ -1,0 +1,21 @@
+name: Keep backend warm
+
+# Render's free-tier web service sleeps after ~15 min of inactivity, so the
+# first visitor afterwards waits ~50s for it to wake. Pinging /actuator/health
+# every 10 min keeps it warm. workflow_dispatch lets us trigger it manually
+# from the Actions tab to verify.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render backend health
+        run: |
+          curl -fsS --max-time 90 https://volare-backend.onrender.com/actuator/health
+          echo
+          echo "Backend is awake."
