@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { Star, DollarSign, MapPin } from 'lucide-react'
 import type { Restaurant } from '../types'
@@ -6,7 +7,7 @@ interface Props {
   restaurant: Restaurant
 }
 
-export default function RestaurantCard({ restaurant: r }: Props) {
+export default memo(function RestaurantCard({ restaurant: r }: Props) {
   return (
     <Link to={`/restaurants/${r.id}`} className="card hover:shadow-md transition-shadow group block">
       <div className="relative h-44 bg-slate-100 overflow-hidden">
@@ -14,6 +15,7 @@ export default function RestaurantCard({ restaurant: r }: Props) {
           <img
             src={r.imageUrl}
             alt={r.name}
+            loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
@@ -60,4 +62,4 @@ export default function RestaurantCard({ restaurant: r }: Props) {
       </div>
     </Link>
   )
-}
+})

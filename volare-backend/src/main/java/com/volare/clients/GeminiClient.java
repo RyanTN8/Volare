@@ -2,11 +2,13 @@ package com.volare.clients;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.volare.config.CacheConfig;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -44,6 +46,7 @@ public class GeminiClient {
 
     @CircuitBreaker(name = "gemini", fallbackMethod = "completionFallback")
     @Retry(name = "gemini")
+    @Cacheable(value = CacheConfig.ITINERARY_GENERATION_CACHE, key = "#systemPrompt + '|' + #userMessage")
     public Mono<String> chatCompletion(String systemPrompt, String userMessage) {
         Map<String, Object> body = Map.of(
                 "system_instruction", Map.of(

@@ -59,8 +59,6 @@ public class UserService {
     }
 
     public List<SavedItem> getSavedItems(UUID userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
         return savedItemRepository.findByUserIdOrderBySavedAtDesc(userId);
     }
 

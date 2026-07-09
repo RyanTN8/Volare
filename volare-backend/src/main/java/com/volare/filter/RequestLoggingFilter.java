@@ -27,6 +27,9 @@ public class RequestLoggingFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
         long start = System.currentTimeMillis();
+        // Timer.Sample starts a nanosecond-precision clock; the registry caches the
+        // per-tag Timer instances so no new objects are allocated after warmup.
+        Timer.Sample sample = Timer.start(meterRegistry);
 
         try {
             chain.doFilter(request, response);
@@ -34,12 +37,11 @@ public class RequestLoggingFilter implements Filter {
             long elapsed = System.currentTimeMillis() - start;
             log.info("method={} uri={} status={} duration_ms={}",
                     req.getMethod(), req.getRequestURI(), res.getStatus(), elapsed);
-
-            Timer.builder("http.server.requests.custom")
+            sample.stop(Timer.builder("http.server.requests.custom")
                     .tag("method", req.getMethod())
                     .tag("status", String.valueOf(res.getStatus()))
-                    .register(meterRegistry)
-                    .record(elapsed, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    .publishPercentiles(0.5, 0.95, 0.99)
+                    .register(meterRegistry));
         }
     }
 }

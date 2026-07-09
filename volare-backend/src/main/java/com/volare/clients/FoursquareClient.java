@@ -52,7 +52,7 @@ public class FoursquareClient {
     @CircuitBreaker(name = "foursquare", fallbackMethod = "searchFallback")
     @Retry(name = "foursquare")
     @Cacheable(value = CacheConfig.FOURSQUARE_SEARCH_CACHE,
-               key = "#location + '-' + #term + '-' + #priceTier + '-' + #radius")
+               key = "#location + '-' + #term")
     public Mono<List<RestaurantDTO>> searchBusinesses(String location, String term, String priceTier, int radius) {
         // The Places API rejects `radius` alongside `near` (radius only pairs with `ll`),
         // so we let `near` resolve the search area. `radius` stays in the cache key only.

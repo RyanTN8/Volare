@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { generateItinerary } from '../api/itinerary'
 import { useItineraryStore } from '../store/itineraryStore'
 import type { Activity } from '../types'
@@ -36,6 +36,11 @@ export default function ItineraryView() {
   // Show the stored plan unless the URL carries new parameters from the
   // landing page that the stored plan wasn't generated for.
   const plan = storedPlan && (!destination || storedSignature === signature) ? storedPlan : null
+
+  const activeDayPlan = useMemo(
+    () => plan?.days.find(d => d.day === activeDay) ?? null,
+    [plan, activeDay]
+  )
 
   const mutation = useMutation({
     mutationFn: generateItinerary,
@@ -136,11 +141,11 @@ export default function ItineraryView() {
             ))}
           </div>
 
-          {plan.days.filter(d => d.day === activeDay).map(day => (
-            <div key={day.day} className="space-y-6">
-              <h2 className="text-xl font-semibold text-slate-800">{day.theme}</h2>
+          {activeDayPlan && (
+            <div key={activeDayPlan.day} className="space-y-6">
+              <h2 className="text-xl font-semibold text-slate-800">{activeDayPlan.theme}</h2>
               {(['morning', 'afternoon', 'evening'] as const).map(slot => {
-                const activities = day[slot]
+                const activities = activeDayPlan[slot]
                 if (!activities?.length) return null
                 return (
                   <div key={slot}>
@@ -156,7 +161,7 @@ export default function ItineraryView() {
                 )
               })}
             </div>
-          ))}
+          )}
 
           <div className="mt-8 text-center">
             <button onClick={handleGenerate} className="btn-secondary text-sm">
@@ -169,7 +174,7 @@ export default function ItineraryView() {
   )
 }
 
-function ActivityCard({ activity: a }: { activity: Activity }) {
+const ActivityCard = memo(function ActivityCard({ activity: a }: { activity: Activity }) {
   return (
     <div className="card p-4 flex items-start gap-4">
       <div className={clsx(
@@ -194,4 +199,4 @@ function ActivityCard({ activity: a }: { activity: Activity }) {
       </div>
     </div>
   )
-}
+})

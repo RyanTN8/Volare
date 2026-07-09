@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Plane, Clock, Users } from 'lucide-react'
 import type { FlightOffer } from '../types'
 
@@ -14,7 +15,7 @@ function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function FlightCard({ flight, onSave }: Props) {
+export default memo(function FlightCard({ flight, onSave }: Props) {
   const outbound = flight.itineraries[0]
   const first = outbound?.segments[0]
   const last = outbound?.segments[outbound.segments.length - 1]
@@ -76,4 +77,4 @@ export default function FlightCard({ flight, onSave }: Props) {
       )}
     </div>
   )
-}
+})

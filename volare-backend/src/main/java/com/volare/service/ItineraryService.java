@@ -85,19 +85,21 @@ public class ItineraryService {
             return Mono.just(plan);
         }
 
-        // Enrich RESTAURANT activities with Foursquare data for demo purposes.
-        // A production implementation would batch-enrich all restaurant activities in parallel
         return foursquareClient.searchBusinesses(destination, "restaurants", null, 5000)
                 .map(restaurants -> {
                     if (restaurants.isEmpty()) return plan;
 
-                    // Attach Foursquare place IDs to RESTAURANT activities where names roughly match
+                    // Normalize names once; avoids repeated toLowerCase() inside the per-activity loop.
+                    List<Map.Entry<String, com.volare.dto.RestaurantDTO>> normalized = restaurants.stream()
+                            .map(r -> Map.entry(r.name().toLowerCase(), r))
+                            .toList();
+
                     List<ItineraryPlanDTO.DayPlan> enrichedDays = plan.days().stream()
                             .map(day -> new ItineraryPlanDTO.DayPlan(
                                     day.day(), day.theme(),
-                                    enrichActivities(day.morning(), restaurants),
-                                    enrichActivities(day.afternoon(), restaurants),
-                                    enrichActivities(day.evening(), restaurants)
+                                    enrichActivities(day.morning(), normalized),
+                                    enrichActivities(day.afternoon(), normalized),
+                                    enrichActivities(day.evening(), normalized)
                             ))
                             .toList();
 
@@ -109,13 +111,15 @@ public class ItineraryService {
 
     private List<ItineraryPlanDTO.Activity> enrichActivities(
             List<ItineraryPlanDTO.Activity> activities,
-            List<com.volare.dto.RestaurantDTO> foursquareResults
+            List<Map.Entry<String, com.volare.dto.RestaurantDTO>> normalizedRestaurants
     ) {
         if (activities == null) return List.of();
         return activities.stream().map(act -> {
             if (!"RESTAURANT".equals(act.type())) return act;
-            return foursquareResults.stream()
-                    .filter(r -> r.name().toLowerCase().contains(act.name().toLowerCase().substring(0, Math.min(5, act.name().length()))))
+            String prefix = act.name().toLowerCase().substring(0, Math.min(5, act.name().length()));
+            return normalizedRestaurants.stream()
+                    .filter(e -> e.getKey().contains(prefix))
+                    .map(Map.Entry::getValue)
                     .findFirst()
                     .map(r -> new ItineraryPlanDTO.Activity(
                             act.name(), act.description(), act.type(), act.estimatedDuration(),

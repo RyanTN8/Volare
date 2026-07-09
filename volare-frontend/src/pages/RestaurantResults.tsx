@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { searchRestaurants } from '../api/restaurants'
 import RestaurantCard from '../components/RestaurantCard'
 import { SkeletonList } from '../components/SkeletonCard'
@@ -21,11 +21,19 @@ export default function RestaurantResults() {
   const term = params.get('term') ?? undefined
   const [priceTier, setPriceTier] = useState(params.get('priceTier') ?? '')
   const [radius, setRadius] = useState(parseInt(params.get('radius') ?? '5000'))
+  const [debouncedRadius, setDebouncedRadius] = useState(radius)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedRadius(radius), 400)
+    return () => clearTimeout(timer)
+  }, [radius])
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['restaurants', location, term, priceTier, radius],
-    queryFn: () => searchRestaurants({ location, term, priceTier: priceTier || undefined, radius }),
+    queryKey: ['restaurants', location, term, priceTier, debouncedRadius],
+    queryFn: () => searchRestaurants({ location, term, priceTier: priceTier || undefined, radius: debouncedRadius }),
     enabled: !!location,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 
   if (!location) {
