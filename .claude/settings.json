@@ -7,7 +7,18 @@
       "Bash(xargs ls -la)",
       "Skill(artifact-design)",
       "Skill(artifact-design:*)",
-      "Bash(mvn --version)"
+      "Bash(mvn --version)",
+      "Bash(gh run *)",
+      "Bash(gh api *)",
+      "Bash(curl -s \"https://api.github.com/repos/RyanTN8/Volare/actions/workflows\")",
+      "Bash(curl -s \"https://api.github.com/repos/RyanTN8/Volare/actions/workflows/278082073/runs?per_page=10\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s \"https://volare-backend.onrender.com/actuator/health\" -w \"\\\\nHTTP_STATUS:%{http_code}\\\\nTIME:%{time_total}s\\\\n\" --max-time 90)",
+      "Bash(curl -sL https://api.github.com/repos/RyanTN8/Volare/actions/runs/29454516270/logs -o /tmp/run_logs.zip -w 'HTTP:%{http_code}\\\\n')",
+      "Bash(unzip -l /tmp/run_logs.zip)",
+      "WebSearch",
+      "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\('/Users/ryannguyen/volare/.github/workflows/keep-alive.yml'\\)\\)\")",
+      "Bash(pip3 install *)"
     ]
   }
 }

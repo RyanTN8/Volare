@@ -1,9 +1,16 @@
 name: Keep backend warm
 
-# Render's free-tier web service sleeps after ~15 min of inactivity, so the
-# first visitor afterwards waits ~50s for it to wake. Pinging /actuator/health
-# every 10 min keeps it warm. workflow_dispatch lets us trigger it manually
-# from the Actions tab to verify.
+# Render's free-tier web service sleeps after ~15 min of inactivity. A cold
+# start has to chain JVM boot -> Spring context -> Flyway validate -> Hikari
+# connecting to Neon (which also autosuspends and has its own wake delay), so
+# a single 90s attempt can time out before the app ever answers. Retrying with
+# a generous per-attempt timeout lets a slow cold start actually complete
+# instead of registering as a failed ping that warmed nothing.
+#
+# Note: GitHub's own scheduler is best-effort for `cron` triggers - on quiet
+# repos it commonly delays or skips runs by 30min-2h+, so this alone does not
+# guarantee true 10-minute cadence. Pair with an external cron pinger (e.g.
+# cron-job.org or UptimeRobot) for reliable timing.
 
 on:
   schedule:
@@ -16,6 +23,7 @@ jobs:
     steps:
       - name: Ping Render backend health
         run: |
-          curl -fsS --max-time 90 https://volare-backend.onrender.com/actuator/health
+          curl -fsS --retry 4 --retry-delay 20 --retry-all-errors --max-time 60 \
+            https://volare-backend.onrender.com/actuator/health
           echo
           echo "Backend is awake."
