@@ -4,7 +4,9 @@
       "Bash(git add *)",
       "Bash(git -c 'user.name=Ryan Nguyen' -c user.email=ryantn8@berkeley.edu commit -q -m 'Add GitHub Actions keep-alive ping for Render backend *)",
       "Bash(git push *)",
-      "Bash(xargs ls -la)"
+      "Bash(xargs ls -la)",
+      "Skill(artifact-design)",
+      "Skill(artifact-design:*)"
     ]
   }
 }

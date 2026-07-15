@@ -6,65 +6,72 @@ import RestaurantCard from '../components/RestaurantCard'
 import { SkeletonList } from '../components/SkeletonCard'
 import ErrorMessage from '../components/ErrorMessage'
 import { UtensilsCrossed } from 'lucide-react'
+import clsx from 'clsx'
 
 const PRICE_OPTIONS = [
-  { value: '', label: 'All' },
-  { value: '1', label: '$' },
-  { value: '2', label: '$$' },
-  { value: '3', label: '$$$' },
+  { value: '',  label: 'Any'  },
+  { value: '1', label: '$'    },
+  { value: '2', label: '$$'   },
+  { value: '3', label: '$$$'  },
   { value: '4', label: '$$$$' },
 ]
 
 export default function RestaurantResults() {
   const [params] = useSearchParams()
   const location = params.get('location') ?? ''
-  const term = params.get('term') ?? undefined
-  const [priceTier, setPriceTier] = useState(params.get('priceTier') ?? '')
-  const [radius, setRadius] = useState(parseInt(params.get('radius') ?? '5000'))
+  const term     = params.get('term') ?? undefined
+
+  const [priceTier, setPriceTier]             = useState(params.get('priceTier') ?? '')
+  const [radius, setRadius]                   = useState(parseInt(params.get('radius') ?? '5000'))
   const [debouncedRadius, setDebouncedRadius] = useState(radius)
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedRadius(radius), 400)
-    return () => clearTimeout(timer)
+    const t = setTimeout(() => setDebouncedRadius(radius), 400)
+    return () => clearTimeout(t)
   }, [radius])
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['restaurants', location, term, priceTier, debouncedRadius],
-    queryFn: () => searchRestaurants({ location, term, priceTier: priceTier || undefined, radius: debouncedRadius }),
-    enabled: !!location,
+    queryFn:  () => searchRestaurants({ location, term, priceTier: priceTier || undefined, radius: debouncedRadius }),
+    enabled:  !!location,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    gcTime:    10 * 60 * 1000,
   })
 
   if (!location) {
     return (
       <div className="flex flex-col items-center gap-3 py-24 text-center">
-        <UtensilsCrossed className="w-12 h-12 text-slate-300" />
-        <p className="text-slate-500">Enter a location to find restaurants.</p>
+        <UtensilsCrossed className="w-10 h-10 text-slate-200" />
+        <p className="text-slate-500 text-sm">Enter a location to find restaurants.</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-1">
-        {term ? `${term} in ` : 'Restaurants in '}{location}
-      </h1>
+    <div className="max-w-6xl mx-auto px-6 py-8">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="font-display font-bold text-2xl text-slate-900 tracking-tight">
+          {term ? `${term} in ` : 'Restaurants in '}
+          <span className="text-brand-700">{location}</span>
+        </h1>
+      </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6 mt-4 items-center">
+      <div className="flex flex-wrap gap-4 mb-8 items-end">
         <div>
-          <label className="text-xs text-slate-500 block mb-1">Price</label>
-          <div className="flex gap-1">
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Price</p>
+          <div className="flex gap-1.5">
             {PRICE_OPTIONS.map(o => (
               <button
                 key={o.value}
                 onClick={() => setPriceTier(o.value)}
-                className={`px-3 py-1 text-sm rounded-lg border transition-colors ${
+                className={clsx(
+                  'px-3 py-1.5 text-sm rounded-md border transition-colors font-medium',
                   priceTier === o.value
-                    ? 'bg-brand-600 text-white border-brand-600'
-                    : 'border-slate-300 text-slate-600 hover:bg-slate-50'
-                }`}
+                    ? 'bg-brand-700 text-white border-brand-700'
+                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                )}
               >
                 {o.label}
               </button>
@@ -72,12 +79,8 @@ export default function RestaurantResults() {
           </div>
         </div>
         <div>
-          <label className="text-xs text-slate-500 block mb-1">Radius</label>
-          <select
-            className="input w-36 text-sm"
-            value={radius}
-            onChange={e => setRadius(parseInt(e.target.value))}
-          >
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Radius</p>
+          <select className="input w-36 text-sm" value={radius} onChange={e => setRadius(parseInt(e.target.value))}>
             <option value="1000">1 km</option>
             <option value="5000">5 km</option>
             <option value="10000">10 km</option>
@@ -87,18 +90,20 @@ export default function RestaurantResults() {
       </div>
 
       {isLoading && <SkeletonList count={6} />}
-      {isError && <ErrorMessage message={(error as Error).message} onRetry={() => refetch()} />}
+      {isError   && <ErrorMessage message={(error as Error).message} onRetry={() => refetch()} />}
 
       {data && data.length === 0 && (
-        <div className="text-center py-16 text-slate-400">
-          <UtensilsCrossed className="w-12 h-12 mx-auto mb-3 text-slate-200" />
-          No restaurants found. Try widening your search.
+        <div className="text-center py-20">
+          <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 text-slate-200" />
+          <p className="text-slate-500 text-sm">No restaurants found. Try widening your search.</p>
         </div>
       )}
 
       {data && data.length > 0 && (
         <>
-          <p className="text-sm text-slate-500 mb-4">{data.length} results</p>
+          <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-5">
+            {data.length} results
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {data.map(r => <RestaurantCard key={r.id} restaurant={r} />)}
           </div>
