@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plane, Map, Search, UtensilsCrossed, Sparkles } from 'lucide-react'
+import { Plane, Search, UtensilsCrossed, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
 
 type Tab = 'itinerary' | 'flights'
