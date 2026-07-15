@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero ― deep teal ground, white type, search card floats below */}
-      <div className="bg-brand-900 px-6 pt-20 pb-0">
+      <div className="bg-brand-900 px-6 pt-20 pb-20">
         <div className="max-w-3xl mx-auto">
           <div className="text-center pb-12">
             <p className="text-brand-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
@@ -23,8 +23,8 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Search card — sits at the bottom of the hero, bridging into the content */}
-          <div className="bg-white rounded-t-2xl shadow-2xl shadow-brand-950/40 overflow-hidden">
+          {/* Search card — floats within the hero, fully rounded */}
+          <div className="bg-white rounded-2xl shadow-2xl shadow-brand-950/40 overflow-hidden">
             <div className="flex items-center gap-2 px-6 pt-5 text-brand-700">
               <Sparkles className="w-3.5 h-3.5" />
               <span className="text-sm font-semibold">AI Trip Planner</span>

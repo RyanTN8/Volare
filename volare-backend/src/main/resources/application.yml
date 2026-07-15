@@ -81,10 +81,10 @@ resilience4j:
         failure-rate-threshold: 50
       gemini:
         register-health-indicator: true
-        sliding-window-size: 5
-        minimum-number-of-calls: 3
-        wait-duration-in-open-state: 60s
-        failure-rate-threshold: 60
+        sliding-window-size: 10
+        minimum-number-of-calls: 6
+        wait-duration-in-open-state: 20s
+        failure-rate-threshold: 80
   retry:
     instances:
       foursquare:
@@ -98,8 +98,9 @@ resilience4j:
         wait-duration: 1s
         exponential-backoff-multiplier: 2
       gemini:
-        max-attempts: 2
+        max-attempts: 4
         wait-duration: 2s
+        exponential-backoff-multiplier: 2
 
 logging:
   pattern:

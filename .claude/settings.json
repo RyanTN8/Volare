@@ -18,7 +18,8 @@
       "Bash(unzip -l /tmp/run_logs.zip)",
       "WebSearch",
       "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\('/Users/ryannguyen/volare/.github/workflows/keep-alive.yml'\\)\\)\")",
-      "Bash(pip3 install *)"
+      "Bash(pip3 install *)",
+      "Bash(ruby -ryaml -e ' *)"
     ]
   }
 }
