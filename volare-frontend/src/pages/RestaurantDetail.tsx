@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getRestaurantDetail } from '../api/restaurants'
 import { SkeletonDetailPage } from '../components/SkeletonCard'
@@ -7,6 +7,7 @@ import { Star, MapPin, Phone, ExternalLink, ArrowLeft } from 'lucide-react'
 
 export default function RestaurantDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { data: r, isLoading, isError, error } = useQuery({
     queryKey: ['restaurant', id],
     queryFn:  () => getRestaurantDetail(id!),
@@ -19,13 +20,13 @@ export default function RestaurantDetail() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
-      <Link
-        to="/restaurants"
+      <button
+        onClick={() => navigate(-1)}
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-6 transition-colors group"
       >
         <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-        Back to results
-      </Link>
+        Back
+      </button>
 
       {r.imageUrl && (
         <img

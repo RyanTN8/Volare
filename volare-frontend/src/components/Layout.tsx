@@ -14,10 +14,8 @@ export default function Layout() {
             <span className="font-display font-800 text-slate-900 tracking-tight text-[15px]">Volare</span>
           </NavLink>
           <nav className="flex items-center gap-0.5">
-            <NavItem to="/flights"     label="Flights" />
-            <NavItem to="/restaurants" label="Restaurants" />
-            <NavItem to="/itinerary"   label="Plan Trip" />
-            <NavItem to="/profile"     label="Profile" />
+            <NavItem to="/itinerary" label="Plan Trip" />
+            <NavItem to="/profile"   label="Profile" />
           </nav>
         </div>
       </header>

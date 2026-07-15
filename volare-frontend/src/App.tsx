@@ -3,11 +3,9 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 
-const FlightResults     = lazy(() => import('./pages/FlightResults'))
-const RestaurantResults = lazy(() => import('./pages/RestaurantResults'))
-const RestaurantDetail  = lazy(() => import('./pages/RestaurantDetail'))
-const ItineraryView     = lazy(() => import('./pages/ItineraryView'))
-const Profile           = lazy(() => import('./pages/Profile'))
+const RestaurantDetail = lazy(() => import('./pages/RestaurantDetail'))
+const ItineraryView    = lazy(() => import('./pages/ItineraryView'))
+const Profile          = lazy(() => import('./pages/Profile'))
 
 function PageLoader() {
   return (
@@ -22,8 +20,6 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Home />} />
-        <Route path="/flights"         element={<Suspense fallback={<PageLoader />}><FlightResults /></Suspense>} />
-        <Route path="/restaurants"     element={<Suspense fallback={<PageLoader />}><RestaurantResults /></Suspense>} />
         <Route path="/restaurants/:id" element={<Suspense fallback={<PageLoader />}><RestaurantDetail /></Suspense>} />
         <Route path="/itinerary"       element={<Suspense fallback={<PageLoader />}><ItineraryView /></Suspense>} />
         <Route path="/profile"         element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />

@@ -1,12 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plane, Search, UtensilsCrossed, Sparkles } from 'lucide-react'
-import clsx from 'clsx'
-
-type Tab = 'itinerary' | 'flights'
+import { Plane, UtensilsCrossed, Sparkles } from 'lucide-react'
 
 export default function Home() {
-  const [tab, setTab] = useState<Tab>('itinerary')
   const navigate = useNavigate()
 
   return (
@@ -29,33 +25,12 @@ export default function Home() {
 
           {/* Search card — sits at the bottom of the hero, bridging into the content */}
           <div className="bg-white rounded-t-2xl shadow-2xl shadow-brand-950/40 overflow-hidden">
-            {/* Tabs */}
-            <div className="flex border-b border-slate-100">
-              {([
-                ['itinerary', 'AI Trip Planner', <Sparkles className="w-3.5 h-3.5" />],
-                ['flights',   'Flights',          <Plane className="w-3.5 h-3.5" />],
-              ] as [Tab, string, React.ReactNode][]).map(([id, label, icon]) => (
-                <button
-                  key={id}
-                  onClick={() => setTab(id)}
-                  className={clsx(
-                    'flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-all',
-                    tab === id
-                      ? 'text-brand-700 border-b-2 border-brand-700 bg-brand-50/60'
-                      : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-                  )}
-                >
-                  {icon} {label}
-                </button>
-              ))}
+            <div className="flex items-center gap-2 px-6 pt-5 text-brand-700">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="text-sm font-semibold">AI Trip Planner</span>
             </div>
             <div className="p-6">
-              <div className={tab === 'itinerary' ? '' : 'hidden'}>
-                <ItinerarySearchForm onSearch={p => navigate(`/itinerary?${p}`)} />
-              </div>
-              <div className={tab === 'flights' ? '' : 'hidden'}>
-                <FlightSearchForm onSearch={p => navigate(`/flights?${p}`)} />
-              </div>
+              <ItinerarySearchForm onSearch={p => navigate(`/itinerary?${p}`)} />
             </div>
           </div>
         </div>
@@ -111,37 +86,6 @@ function usePersistentState<T>(key: string, initial: T) {
   return [state, setState] as const
 }
 
-function FlightSearchForm({ onSearch }: { onSearch: (params: string) => void }) {
-  const EMPTY = { origin: '', destination: '', departureDate: '', returnDate: '', passengers: '' }
-  const [form, setForm] = usePersistentState('volare:flightSearch', EMPTY)
-  const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }))
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const p = new URLSearchParams(Object.fromEntries(Object.entries(form).filter(([, v]) => v)))
-    onSearch(p.toString())
-  }
-
-  return (
-    <form onSubmit={submit}>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <input className="input" placeholder="From (SFO)" value={form.origin} onChange={update('origin')} maxLength={3} required />
-        <input className="input" placeholder="To (JFK)" value={form.destination} onChange={update('destination')} maxLength={3} required />
-        <input className="input" type="date" value={form.departureDate} onChange={update('departureDate')} required />
-        <input className="input" type="date" value={form.returnDate} onChange={update('returnDate')} />
-        <input className="input" type="number" min={1} max={9} value={form.passengers} onChange={update('passengers')} placeholder="Passengers" />
-      </div>
-      <div className="flex gap-3 mt-4">
-        <button type="submit" className="btn-primary flex-1 flex items-center justify-center gap-2">
-          <Search className="w-4 h-4" /> Search Flights
-        </button>
-        <button type="button" onClick={() => setForm(EMPTY)} className="btn-secondary">Reset</button>
-      </div>
-    </form>
-  )
-}
-
 function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void }) {
   const EMPTY = { destination: '', durationDays: '', interests: '', budget: 'moderate' }
   const [form, setForm] = usePersistentState('volare:itinerarySearch', EMPTY)
@@ -152,6 +96,7 @@ function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void 
     e.preventDefault()
     const p = new URLSearchParams(Object.fromEntries(Object.entries(form).filter(([, v]) => v)))
     onSearch(p.toString())
+    setForm(EMPTY)
   }
 
   return (

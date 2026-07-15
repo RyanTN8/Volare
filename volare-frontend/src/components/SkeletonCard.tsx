@@ -22,6 +22,45 @@ export function SkeletonList({ count = 4 }: { count?: number }) {
   )
 }
 
+export function SkeletonFlightCard() {
+  return (
+    <div className="card relative overflow-hidden p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="space-y-2 min-w-[56px]">
+            <div className="h-6 w-12 bg-slate-100 rounded" />
+            <div className="h-3 w-10 bg-slate-100 rounded" />
+          </div>
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-16 bg-slate-100 rounded mx-auto" />
+            <div className="h-px w-full bg-slate-100" />
+            <div className="h-3 w-12 bg-slate-100 rounded mx-auto" />
+          </div>
+          <div className="space-y-2 min-w-[56px]">
+            <div className="h-6 w-12 bg-slate-100 rounded" />
+            <div className="h-3 w-10 bg-slate-100 rounded" />
+          </div>
+        </div>
+        <div className="space-y-2 pl-2 border-l border-slate-100">
+          <div className="h-7 w-24 bg-slate-100 rounded" />
+          <div className="h-3 w-16 bg-slate-100 rounded ml-auto" />
+        </div>
+      </div>
+      <div className="animate-pulse absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full" />
+    </div>
+  )
+}
+
+export function SkeletonFlightList({ count = 4 }: { count?: number }) {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <SkeletonFlightCard key={i} />
+      ))}
+    </div>
+  )
+}
+
 export function SkeletonDetailPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-4 animate-pulse">
