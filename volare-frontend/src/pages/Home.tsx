@@ -83,12 +83,21 @@ function usePersistentState<T>(key: string, initial: T) {
     try { localStorage.setItem(key, JSON.stringify(state)) }
     catch { /* ignore quota / private-mode errors */ }
   }, [key, state])
-  return [state, setState] as const
+
+  // Clears state and localStorage synchronously — needed because navigating
+  // away in the same handler can unmount this component before the effect
+  // above ever fires, leaving the old value persisted.
+  const clear = () => {
+    setState(initial)
+    try { localStorage.removeItem(key) } catch { /* ignore */ }
+  }
+
+  return [state, setState, clear] as const
 }
 
 function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void }) {
   const EMPTY = { destination: '', durationDays: '', interests: '', budget: 'moderate' }
-  const [form, setForm] = usePersistentState('volare:itinerarySearch', EMPTY)
+  const [form, setForm, clearForm] = usePersistentState('volare:itinerarySearch', EMPTY)
   const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -96,7 +105,7 @@ function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void 
     e.preventDefault()
     const p = new URLSearchParams(Object.fromEntries(Object.entries(form).filter(([, v]) => v)))
     onSearch(p.toString())
-    setForm(EMPTY)
+    clearForm()
   }
 
   return (
@@ -111,12 +120,9 @@ function ItinerarySearchForm({ onSearch }: { onSearch: (params: string) => void 
           <option value="luxury">Luxury</option>
         </select>
       </div>
-      <div className="flex gap-3 mt-4">
-        <button type="submit" className="btn-primary flex-1 flex items-center justify-center gap-2">
-          <Sparkles className="w-4 h-4" /> Generate Itinerary
-        </button>
-        <button type="button" onClick={() => setForm(EMPTY)} className="btn-secondary">Reset</button>
-      </div>
+      <button type="submit" className="btn-primary w-full mt-4 flex items-center justify-center gap-2">
+        <Sparkles className="w-4 h-4" /> Generate Itinerary
+      </button>
     </form>
   )
 }
