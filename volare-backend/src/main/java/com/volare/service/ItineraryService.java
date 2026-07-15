@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.Map;
@@ -44,9 +45,17 @@ public class ItineraryService {
     ) {
         String userPrompt = ItineraryPrompts.buildUserPrompt(destination, durationDays, interests, budget, extraContext);
 
-        return geminiClient.chatCompletion(ItineraryPrompts.SYSTEM, userPrompt)
-                .flatMap(json -> parseAndValidate(json, destination, durationDays, userId))
-                .flatMap(plan -> enrichWithFoursquare(plan, destination))
+        // Kick off Foursquare in parallel with Gemini — the destination is known now.
+        Mono<List<com.volare.dto.RestaurantDTO>> restaurantsMono =
+                foursquareClient.searchBusinesses(destination, "restaurants", null, 5000)
+                        .onErrorReturn(List.of())
+                        .cache(); // share the result between the zip subscribers
+
+        Mono<String> geminiMono = geminiClient.chatCompletion(ItineraryPrompts.SYSTEM, userPrompt);
+
+        return Mono.zip(geminiMono, restaurantsMono)
+                .flatMap(tuple -> parseAndValidate(tuple.getT1(), destination, durationDays, userId)
+                        .map(plan -> enrichWithRestaurants(plan, tuple.getT2())))
                 .retry(1);
     }
 
@@ -55,58 +64,56 @@ public class ItineraryService {
             @SuppressWarnings("unchecked")
             Map<String, Object> planMap = objectMapper.readValue(json, Map.class);
 
-            // Persist raw plan
-            Itinerary entity = Itinerary.builder()
-                    .userId(userId)
-                    .destination(destination)
-                    .durationDays(durationDays)
-                    .generatedPlan(planMap)
-                    .build();
-            itineraryRepository.save(entity);
-
             ItineraryPlanDTO dto = objectMapper.convertValue(planMap, ItineraryPlanDTO.class);
-            // Return with persisted ID
-            return Mono.just(new ItineraryPlanDTO(
-                    entity.getId(),
-                    dto.destination(),
-                    dto.durationDays(),
-                    dto.days(),
-                    dto.generalTips(),
-                    dto.budgetEstimate()
-            ));
+
+            // JPA save is blocking JDBC — must run off the reactor event loop.
+            return Mono.fromCallable(() -> {
+                        Itinerary entity = Itinerary.builder()
+                                .userId(userId)
+                                .destination(destination)
+                                .durationDays(durationDays)
+                                .generatedPlan(planMap)
+                                .build();
+                        return itineraryRepository.save(entity);
+                    })
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .map(entity -> new ItineraryPlanDTO(
+                            entity.getId(),
+                            dto.destination(),
+                            dto.durationDays(),
+                            dto.days(),
+                            dto.generalTips(),
+                            dto.budgetEstimate()
+                    ));
         } catch (Exception e) {
             log.error("Failed to parse itinerary JSON: {}", e.getMessage());
             return Mono.error(new RuntimeException("AI returned invalid itinerary format, please retry"));
         }
     }
 
-    private Mono<ItineraryPlanDTO> enrichWithFoursquare(ItineraryPlanDTO plan, String destination) {
-        if (plan.days() == null || plan.days().isEmpty()) {
-            return Mono.just(plan);
+    private ItineraryPlanDTO enrichWithRestaurants(
+            ItineraryPlanDTO plan,
+            List<com.volare.dto.RestaurantDTO> restaurants
+    ) {
+        if (restaurants.isEmpty() || plan.days() == null || plan.days().isEmpty()) {
+            return plan;
         }
 
-        return foursquareClient.searchBusinesses(destination, "restaurants", null, 5000)
-                .map(restaurants -> {
-                    if (restaurants.isEmpty()) return plan;
+        List<Map.Entry<String, com.volare.dto.RestaurantDTO>> normalized = restaurants.stream()
+                .map(r -> Map.entry(r.name().toLowerCase(), r))
+                .toList();
 
-                    // Normalize names once; avoids repeated toLowerCase() inside the per-activity loop.
-                    List<Map.Entry<String, com.volare.dto.RestaurantDTO>> normalized = restaurants.stream()
-                            .map(r -> Map.entry(r.name().toLowerCase(), r))
-                            .toList();
+        List<ItineraryPlanDTO.DayPlan> enrichedDays = plan.days().stream()
+                .map(day -> new ItineraryPlanDTO.DayPlan(
+                        day.day(), day.theme(),
+                        enrichActivities(day.morning(), normalized),
+                        enrichActivities(day.afternoon(), normalized),
+                        enrichActivities(day.evening(), normalized)
+                ))
+                .toList();
 
-                    List<ItineraryPlanDTO.DayPlan> enrichedDays = plan.days().stream()
-                            .map(day -> new ItineraryPlanDTO.DayPlan(
-                                    day.day(), day.theme(),
-                                    enrichActivities(day.morning(), normalized),
-                                    enrichActivities(day.afternoon(), normalized),
-                                    enrichActivities(day.evening(), normalized)
-                            ))
-                            .toList();
-
-                    return new ItineraryPlanDTO(plan.id(), plan.destination(), plan.durationDays(),
-                            enrichedDays, plan.generalTips(), plan.budgetEstimate());
-                })
-                .onErrorReturn(plan); // enrichment is best-effort
+        return new ItineraryPlanDTO(plan.id(), plan.destination(), plan.durationDays(),
+                enrichedDays, plan.generalTips(), plan.budgetEstimate());
     }
 
     private List<ItineraryPlanDTO.Activity> enrichActivities(

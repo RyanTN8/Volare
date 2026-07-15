@@ -6,7 +6,8 @@
       "Bash(git push *)",
       "Bash(xargs ls -la)",
       "Skill(artifact-design)",
-      "Skill(artifact-design:*)"
+      "Skill(artifact-design:*)",
+      "Bash(mvn --version)"
     ]
   }
 }

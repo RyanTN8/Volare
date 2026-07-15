@@ -61,7 +61,10 @@ public class GeminiClient {
                 "generationConfig", Map.of(
                         "temperature", 0.7,
                         "maxOutputTokens", 4096,
-                        "responseMimeType", "application/json"
+                        "responseMimeType", "application/json",
+                        // Disable extended thinking on 2.5-flash — saves 15-30s with no
+                        // quality loss on structured JSON tasks.
+                        "thinkingConfig", Map.of("thinkingBudget", 0)
                 )
         );
 
