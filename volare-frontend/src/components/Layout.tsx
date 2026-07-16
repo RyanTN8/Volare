@@ -15,7 +15,6 @@ export default function Layout() {
           </NavLink>
           <nav className="flex items-center gap-0.5">
             <NavItem to="/itinerary" label="Plan Trip" />
-            <NavItem to="/profile"   label="Profile" />
           </nav>
         </div>
       </header>
