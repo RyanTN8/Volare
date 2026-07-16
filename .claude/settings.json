@@ -19,7 +19,21 @@
       "WebSearch",
       "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\('/Users/ryannguyen/volare/.github/workflows/keep-alive.yml'\\)\\)\")",
       "Bash(pip3 install *)",
-      "Bash(ruby -ryaml -e ' *)"
+      "Bash(ruby -ryaml -e ' *)",
+      "Bash(git log *)",
+      "Bash(perl -0777 -pe 's/\\\\n*Co-Authored-By: Claude Opus 4\\\\.7 <noreply\\\\@anthropic\\\\.com>\\\\n*/\\\\n/g; s/\\\\n+\\\\z/\\\\n/' /tmp/msgtest.txt)",
+      "Bash(git tag *)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --msg-filter ' *)",
+      "Bash(git stash *)",
+      "Bash(curl -fsS --max-time 20 -w \"\\\\nHTTP status: %{http_code}\\\\nTotal time: %{time_total}s\\\\n\" https://volare-backend.onrender.com/actuator/health)",
+      "Bash(curl -fsS --retry 4 --retry-delay 20 --retry-all-errors --max-time 60 -w \"\\\\nHTTP status: %{http_code}\\\\nTotal time: %{time_total}s\\\\n\" https://volare-backend.onrender.com/actuator/health)",
+      "Bash(nslookup volare-backend.onrender.com)",
+      "Bash(curl -v --max-time 10 -o /dev/null https://volare-backend.onrender.com/)",
+      "Bash(curl -v --max-time 15 -o /dev/null https://volare-backend.onrender.com/)",
+      "Bash(brew install *)",
+      "Bash(gh auth *)",
+      "Bash(xargs -I{} gh run view {} --log)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
