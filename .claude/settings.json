@@ -33,7 +33,8 @@
       "Bash(brew install *)",
       "Bash(gh auth *)",
       "Bash(xargs -I{} gh run view {} --log)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git show *)"
     ]
   }
 }
