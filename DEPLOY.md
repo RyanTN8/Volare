@@ -1,6 +1,17 @@
 # Deploying Volare
 
 Architecture: **Vercel** (frontend) proxies `/api/*` to **Render** (Spring Boot backend + managed Postgres).
+
+## Temporary portfolio demo without Neon
+
+The Render Blueprint currently uses the `demo` Spring profile. It runs with an
+in-memory H2 database, so the deployed app makes no connection to Neon. This is
+appropriate only as a temporary portfolio fallback: saved profiles, bookmarks,
+and itinerary history are deleted whenever Render restarts or redeploys.
+
+To return to Neon, change `SPRING_PROFILES_ACTIVE` to `prod` in the Render
+dashboard (or in `render.yaml`) and redeploy. The existing `DB_*` environment
+variables remain in place; do not delete or change them for demo mode.
 Both auto-deploy on every push to the GitHub repo's default branch.
 
 ## 1. Push to GitHub

@@ -1,0 +1,26 @@
+spring:
+  config:
+    activate:
+      on-profile: demo
+  datasource:
+    # PostgreSQL mode preserves the closest practical behavior for this app's
+    # JPA mappings while keeping all data inside the Render process.
+    url: jdbc:h2:mem:volare;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+
+# Keep the public health check independent of the temporary database. The app
+# still reports database problems through its normal request error responses.
+management:
+  health:
+    db:
+      enabled: false

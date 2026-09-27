@@ -12,7 +12,9 @@ services:
     autoDeploy: true
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: prod
+        # Portfolio fallback: runs without Neon. Data is erased whenever Render restarts.
+        # Change this back to "prod" after restoring the Neon database configuration.
+        value: demo
       # Neon Postgres — set these in the Render dashboard (sync: false keeps them out of git).
       # Neon requires sslmode=require; the app defaults DB_SSLMODE to "disable" if unset.
       - key: DB_HOST
