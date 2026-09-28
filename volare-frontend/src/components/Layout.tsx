@@ -1,6 +1,5 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
-import { Compass, Menu, Plane } from 'lucide-react'
-import clsx from 'clsx'
+import { ArrowLeft, ArrowRight, Compass, Plane } from 'lucide-react'
 import { useItineraryStore } from '../store/itineraryStore'
 
 export default function Layout() {
@@ -18,23 +17,24 @@ export default function Layout() {
             </div>
             <span className="font-display font-extrabold text-[#173c35] tracking-[-0.06em] text-xl">volare</span>
           </NavLink>
-          <nav className="flex items-center gap-1.5">
-            {hasPlan && <NavItem to="/itinerary" label="Plan Trip" />}
+          <nav>
             {isItineraryPage && (
               <NavLink
                 to="/"
                 end
-                className={({ isActive }) => clsx(
-                  'hidden sm:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors',
-                  isActive
-                    ? 'bg-[#173c35] text-white'
-                    : 'text-stone-600 hover:text-[#173c35] hover:bg-[#eae4da]'
-                )}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-sm font-semibold text-stone-600 hover:text-[#173c35] hover:bg-[#eae4da] transition-colors"
               >
-                <Compass className="w-3.5 h-3.5" /> Explore
+                <ArrowLeft className="w-3.5 h-3.5" /> Explore destinations
               </NavLink>
             )}
-            <Menu className="sm:hidden w-5 h-5 text-[#173c35]" />
+            {!isItineraryPage && hasPlan && (
+              <NavLink
+                to="/itinerary"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-sm font-semibold bg-[#173c35] text-white hover:bg-[#0f2d27] transition-colors"
+              >
+                <Compass className="w-3.5 h-3.5" /> View itinerary <ArrowRight className="w-3.5 h-3.5" />
+              </NavLink>
+            )}
           </nav>
         </div>
       </header>
@@ -42,25 +42,5 @@ export default function Layout() {
         <Outlet />
       </main>
     </div>
-  )
-}
-
-function NavItem({ to, label }: { to: string; label: string }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        clsx(
-          // Keep the same font weight in every state so activating the link
-          // does not change its measured width and nudge the nav.
-          'px-3 py-1.5 rounded-full text-sm font-semibold transition-colors',
-          isActive
-            ? 'text-[#173c35] bg-[#e4ded2]'
-            : 'text-stone-600 hover:text-[#173c35] hover:bg-[#eae4da]'
-        )
-      }
-    >
-      {label}
-    </NavLink>
   )
 }
