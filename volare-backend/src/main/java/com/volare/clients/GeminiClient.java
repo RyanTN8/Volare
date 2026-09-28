@@ -60,7 +60,10 @@ public class GeminiClient {
                 ),
                 "generationConfig", Map.of(
                         "temperature", 0.7,
-                        "maxOutputTokens", 4096,
+                        // Itineraries are displayed as concise cards. A lower ceiling means
+                        // Gemini can return a complete, useful plan materially faster while
+                        // still leaving room for multi-day trips.
+                        "maxOutputTokens", 2400,
                         "responseMimeType", "application/json",
                         // Disable extended thinking on 2.5-flash — saves 15-30s with no
                         // quality loss on structured JSON tasks.

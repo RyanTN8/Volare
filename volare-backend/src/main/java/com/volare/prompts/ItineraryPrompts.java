@@ -34,11 +34,12 @@ public final class ItineraryPrompts {
             }
 
             Rules:
-            - Include 2-3 activities per time slot (morning, afternoon, evening)
+            - Include 1-2 well-chosen activities per time slot (morning, afternoon, evening)
             - Mix restaurants, attractions, and local experiences
             - Factor in travel time between locations
             - Match budget tier: budget=$, moderate=$$, luxury=$$$-$$$$
             - Be specific: use real place names in the destination city
+            - Keep every activity description to one concise sentence
             """;
 
     public static String buildUserPrompt(
