@@ -3,9 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    /* Reserve the scrollbar gutter between routes. Without it, switching from
+       the tall home page to a short planner state changes viewport width and
+       visually shifts centered content, including the header. */
+    overflow-y: scroll;
+  }
+
   body {
-    /* Stone-50: barely-warm off-white — chosen, not defaulted */
-    background-color: #FAFAF9;
+    background-color: #f6f1e8;
     @apply text-slate-900 font-sans antialiased;
   }
 
@@ -21,6 +27,10 @@
            transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2
            disabled:opacity-40 disabled:cursor-not-allowed;
   }
+  .btn-hero-nav {
+    @apply bg-[#173c35] text-white px-4 py-2 rounded-full text-sm font-semibold
+           hover:bg-[#0f2d27] transition-colors;
+  }
   .btn-secondary {
     @apply border border-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium
            bg-white hover:bg-slate-50 active:bg-slate-100
@@ -31,9 +41,9 @@
     @apply bg-white rounded-xl border border-slate-200 overflow-hidden;
   }
   .input {
-    @apply w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm
-           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
-           placeholder-slate-400 bg-white transition-shadow;
+    @apply w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm
+           focus:outline-none focus:ring-2 focus:ring-[#c95d35] focus:border-transparent
+           placeholder-stone-400 bg-white transition-shadow;
   }
   /* Neutral label chip — structure only, no brand color */
   .tag {
